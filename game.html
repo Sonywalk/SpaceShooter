@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Canvas tutorial</title>
+
+
+    <script type="text/javascript">
+
+
+ window.onload = function(){
+
+
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       || 
+          window.webkitRequestAnimationFrame || 
+          window.mozRequestAnimationFrame    || 
+          window.oRequestAnimationFrame      || 
+          window.msRequestAnimationFrame     || 
+          function( callback ){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+ 
+ 
+/**
+ * Shim layer, polyfill, for cancelAnimationFrame with setTimeout fallback.
+ */
+window.cancelRequestAnimFrame = (function(){
+  return  window.cancelRequestAnimationFrame || 
+          window.webkitCancelRequestAnimationFrame || 
+          window.mozCancelRequestAnimationFrame    || 
+          window.oCancelRequestAnimationFrame      || 
+          window.msCancelRequestAnimationFrame     || 
+          window.clearTimeout;
+})();
+ 
+
+var catTexture = new Image();
+var enemyTexture = new Image();
+var cat;
+var x = 0; var enemy_x = 0;
+var y = 0; var enemy_y = 0;
+var c;
+var then;
+var keysDown = {};
+var ctx;
+var enemies = new Array();
+
+init();
+animate();
+
+function init() {
+  catTexture.src = 'cat.png';
+  enemyTexture.src = 'enemy.png';
+  c = document.getElementById("canvas");  
+  c.width = 800;
+  c.height = 600;
+  ctx = c.getContext("2d");
+  then = Date.now();
+
+
+addEventListener("keydown", function (e) {
+  keysDown[e.keyCode] = true;
+}, false);
+
+addEventListener("keyup", function (e) {
+  delete keysDown[e.keyCode];
+}, false);
+
+
+
+
+
+cat = sprite({
+    context: canvas.getContext("2d"),
+    width: 128,
+    height: 128,
+    x: x,
+    y: y,
+    image: catTexture
+});
+
+
+
+spawnEnemies();
+
+
+}
+
+
+
+function spawnEnemies(){
+  
+  var i = 0; var _i = 0;
+  var _enemies;
+
+  while (i < 50){
+    _enemies = sprite({
+        context: canvas.getContext("2d"),
+        width: 32,
+        height: 32,
+        x: enemy_x+(32*i),
+        y: enemy_y+(32*_i),
+        image: enemyTexture
+    });
+    enemies.push(_enemies);
+i++;
+
+  if(i == 10){
+    _i++;
+    i = 0;
+  }
+
+  }
+
+
+}
+
+function animate(){
+
+
+  var now = Date.now();
+  var delta = now - then;
+
+  draw();
+
+  update(delta / 1000);
+
+
+  then = now;
+
+
+requestAnimFrame(animate);
+
+}
+
+
+function sprite (options) {
+        
+    var that = {};
+          
+    that.context = options.context;
+    that.width = options.width;
+    that.height = options.height;
+    that.image = options.image;
+    that.x = options.x;
+    that.y = options.y;
+
+    that.render = function(){
+      that.context.drawImage(
+             that.image,
+             that.x,
+             that.y,
+             that.width,
+             that.height)
+      };
+    
+
+
+    return that;
+}
+
+
+
+
+
+
+function update(modifier)
+{
+
+  if (38 in keysDown) { // Player holding up
+    cat.y -= 100 * modifier;
+  }
+  if (40 in keysDown) { // Player holding down
+    cat.y += 100 * modifier;
+  }
+  if (37 in keysDown) { // Player holding left
+    cat.x -= 100 * modifier;
+  }
+  if (39 in keysDown) { // Player holding right
+    cat.x += 100 * modifier;
+  }
+}
+
+
+
+function draw(){
+
+
+
+  ctx.clearRect(0, 0, 800, 600);
+
+  cat.render();
+  for(var i = 0;i<50;i++){
+    enemies[i].render();
+  }
+
+}
+
+}
+    </script>
+    <style type="text/css">
+      canvas { border: 1px solid black; }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+  </body>
+</html>
