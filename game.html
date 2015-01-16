@@ -179,12 +179,20 @@ function update(modifier)
   fired = true;
   }
 
+
+
+
  for(var i = 0;i<shots.length;i++){
 
-    shots[i].y -= 2; 
-
+    shots[i].y -= 5; 
+    if(shots[i].y < 0) {
+		    shots.splice(i, 1);
+		    fired = false;
+		}     
     }
 
+
+ 
 
   for(var i = 0;i<enemies.length;i++){
 
@@ -202,9 +210,10 @@ function draw(){
 	ctx.fillStyle = "black";
     ctx.fillRect(0, 0, c.width, c.height);
 
+
   	ship.render();
 
-  	for(var i = 0;i<shots.length;i++){  shots[i].render(); }  
+  	for(var i = 0;i<shots.length;i++){ shots[i].render(); }  
   	for(var i = 0;i<100;i++){ enemies[i].render();}
 
 }
