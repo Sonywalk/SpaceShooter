@@ -3,13 +3,8 @@
   <head>
     <meta charset="utf-8"/>
     <title>SPACE SHOOTER!!</title>
-
-
     <script type="text/javascript">
-
-
  window.onload = function(){
-
 
 window.requestAnimFrame = (function(){
   return  window.requestAnimationFrame       || 
@@ -22,11 +17,9 @@ window.requestAnimFrame = (function(){
           };
 })();
 
- 
 
 var shipTexture = new Image();
 var enemyTexture = new Image();
-var ship;
 var x = 800 / 2 - 64; var enemy_x = 0;
 var y = 600 - 76; var enemy_y = 0;
 var c;
@@ -36,8 +29,8 @@ var ctx;
 var enemies = new Array();
 var shots = new Array();
 var moveEnemies = 1;
-
-
+var shot;
+var fired = false;
 
 init();
 animate();
@@ -51,35 +44,27 @@ function init() {
   ctx = c.getContext("2d");
   then = Date.now();
 
+	addEventListener("keydown", function (e) {
+	  keysDown[e.keyCode] = true;
+	}, false);
 
-addEventListener("keydown", function (e) {
-  keysDown[e.keyCode] = true;
-}, false);
+	addEventListener("keyup", function (e) {
+	  delete keysDown[e.keyCode];
+	}, false);
 
-addEventListener("keyup", function (e) {
-  delete keysDown[e.keyCode];
-}, false);
-
-
-
-
-
-ship = sprite({
-    context: canvas.getContext("2d"),
-    width: 64,
-    height: 64,
-    x: x,
-    y: y,
-    image: shipTexture
-});
-
+	ship = sprite({
+	    context: canvas.getContext("2d"),
+	    width: 64,
+	    height: 64,
+	    x: x,
+	    y: y,
+	    image: shipTexture
+	});
 
 
 spawnEnemies();
 
-
 }
-
 
 
 function spawnEnemies(){
@@ -94,39 +79,29 @@ function spawnEnemies(){
         height: 32,
         x: enemy_x+(32*i_),
         y: enemy_y+(36*_i),
-        image: enemyTexture
+        image: enemyTexture,
+        alive: true
     });
     enemies.push(_enemies);
 
     i_++;
 
 
-    if(i_ == 20){
-    	_i++;
-    	i_ = 0;
-    }
-
+    if(i_ == 20){ _i++; i_ = 0; }
 
   i++; 
 
   }
 }
 
-
-
 function animate(){
-
 
   var now = Date.now();
   var delta = now - then;
 
   draw();
-
   update(delta / 1000);
-
-
   then = now;
-
 
 requestAnimFrame(animate);
 
@@ -144,6 +119,8 @@ function sprite (options) {
     that.x = options.x;
     that.y = options.y;
 
+    if(typeof that.alive === 'undefined') { that.alive = options.alive; }
+
     that.render = function(){
       that.context.drawImage(
              that.image,
@@ -153,23 +130,32 @@ function sprite (options) {
              that.height)
       };
     
-
-
     return that;
 }
 
+function rect (options){
 
+	var that = {};
+    that.context = options.context;
+    that.width = options.width;
+    that.height = options.height;
+    that.x = options.x;
+    that.y = options.y;
+    that.color = options.color;
 
+    if(typeof that.alive === 'undefined') { that.alive = options.alive;}
 
-
-
-
+    that.render = function(){
+			that.context.rect(that.x, that.y, that.width, that.height)
+			that.context.fillStyle=that.color;
+			that.context.fill();
+      };
+    
+    return that;
+}
 
 function update(modifier)
 {
-
-
-
 
 
   if (37 in keysDown && ship.x > 0) { 
@@ -178,38 +164,50 @@ function update(modifier)
   if (39 in keysDown && ship.x + 64 < 800) {
     ship.x += 200 * modifier;
   }
+  if(32 in keysDown){
+  	if(!fired){
+  	shot = rect({
+		context: canvas.getContext("2d"),
+		width: 4,
+		height: 7,
+		x: ship.x+28,
+		y: ship.y-25,
+		color: "red",
+	})
+  	shots.push(shot);
+  }
+  fired = true;
+  }
 
+ for(var i = 0;i<shots.length;i++){
 
+    shots[i].y -= 2; 
 
-  for(var i = 0;i<100;i++){
-
-    enemies[i].x += (25 * modifier)*moveEnemies; 
-    if(enemies[i].x > 800 -32) {moveEnemies = -1;}
-	if(enemies[i].x < 0)	{moveEnemies = 1;}
     }
 
+
+  for(var i = 0;i<enemies.length;i++){
+
+    enemies[i].x += (1)*moveEnemies; 
+    if(enemies[i].x > 800 -32) { moveEnemies = -1;  i = 0; }
+	if(enemies[i].x < 0)	{ moveEnemies = 1;  i = 0;}
+
+    }
+
+    console.log(shots.length);
 }
-
-
-
-
-
 
 function draw(){
 
+	ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, c.width, c.height);
 
+  	ship.render();
 
-  //ctx.clearRect(0, 0, 800, 600);
-	ctx.fillStyle="#000000";
-	ctx.fillRect(0,0,800,600);
-  ship.render();
-
-  for(var i = 0;i<100;i++){
-    enemies[i].render();
-  }
+  	for(var i = 0;i<shots.length;i++){  shots[i].render(); }  
+  	for(var i = 0;i<100;i++){ enemies[i].render();}
 
 }
-
 }
     </script>
     <style type="text/css">
